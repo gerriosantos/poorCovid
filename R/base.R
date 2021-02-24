@@ -53,14 +53,19 @@ mun_covid <- data %>%
 ## População
 #nome = c('mun', 'cod_mun', 'gentilico', 'prefeito', 'area', 'pop20')
 #tipos = c('text', 'numeric', 'numeric', 'text', 'numeric')
-pop <- readxl::read_xlsx('2020CEpop.xlsx', skip = 2, n_max = 185)[,1:6]
-colnames(pop) <- c('mun', 'cod_mun', 'gentilico', 'prefeito', 'area', 'pop20')
+# pop <- readxl::read_xlsx('2020CEpop.xlsx', skip = 2, n_max = 185)[,1:6]
+# colnames(pop) <- c('mun', 'cod_mun', 'gentilico', 'prefeito', 'area', 'pop20')
+# pop <- pop %>% mutate(cod_mun1 = as.numeric(cod_mun),
+#                       cod_mun1 = as.numeric(substr(cod_mun1,1,6))) %>%
+#   select(cod_mun1, area, pop20)
 
-pop <- pop %>% mutate(cod_mun1 = as.numeric(cod_mun),
-                      cod_mun1 = as.numeric(substr(cod_mun1,1,6))) %>%
-  select(cod_mun1, area, pop20)
 
-
+# População
+pop <- ribge::populacao_municipios(ano = 2020) %>%
+  filter(uf == 'CE') %>% select(
+    codigoMunicipioCaso=cod_munic6,
+    pop20 = populacao
+    )
 
 
 
@@ -70,9 +75,8 @@ mun <- read_municipality(code_muni = 'CE', year = 2019) %>%
   mutate(codigoMunicipioCaso = as.numeric(substr(code_muni,1,6)),
          name_muni = as.character(name_muni)) %>%
   left_join(mun_covid, by = c('codigoMunicipioCaso')) %>%
-  left_join(pop, by = c('codigoMunicipioCaso'='cod_mun1')) %>%
-  mutate(conf2 = (conf/pop20)*1000,
-         conf3 = (conf/area))
+  left_join(pop, by = c('codigoMunicipioCaso')) %>%
+  mutate(conf2 = (conf/pop20)*1000)
 mun <- cbind(mun, st_coordinates(st_centroid(mun$geom)))
 
 
@@ -109,13 +113,6 @@ for(i in lista) {
 }
 
 
-
-
-
-
-a = list(seq(as.Date('2020-01-01'), as.Date('2020-01-03'), 'day'), NA , NA, as.Date('2020-01-07'))
-b = list(NA, seq(from=as.Date('2020-01-02'), to=as.Date('2020-01-04'), by='day'), NA, NA)
-c = list(NA, NA, NA, as.Date('2020-01-04'), as.Date('2020-01-05'), NA)
 
 
 
